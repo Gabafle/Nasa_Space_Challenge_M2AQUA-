@@ -1,0 +1,267 @@
+################################################################################
+# OS / Filesystem noise
+################################################################################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# Linux
+*~
+.nfs*
+
+################################################################################
+# Git / merge tooling
+################################################################################
+*.orig
+*.rej
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*
+*.sw[a-p]
+*.un~
+*.diff
+*.patch
+
+################################################################################
+# Editors & IDEs
+################################################################################
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# JetBrains (WebStorm/IntelliJ/PyCharm, etc.)
+.idea/*
+!.idea/inspectionProfiles/
+!.idea/codeStyles/
+!.idea/runConfigurations/
+# Uncomment if you really want to ignore everything JetBrains creates:
+# .idea/
+
+# Vim / Neovim
+*.swp
+*.swo
+.session
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+################################################################################
+# Node / Frontend (Vue + Vite)
+################################################################################
+node_modules/
+bower_components/
+
+# Build outputs
+dist/
+build/
+.tmp/
+.temp/
+.temp_cache/
+.cache/
+.vite/
+vite.config.ts.timestamp-*  # Vite HMR timestamps
+
+# Testing / coverage
+coverage/
+.nyc_output/
+junit.xml
+reports/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Vue CLI / misc
+.history/
+.vuepress/dist/
+.vue-cache/
+.eslintcache
+.stylelintcache
+
+# Package managers (keep lockfiles committed by default)
+.pnpm-store/
+.pnpm/                     # local store
+.pnp/
+.pnp.js
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+################################################################################
+# Env / secrets (commit example templates like .env.example instead)
+################################################################################
+.env
+.env.*
+!.env.example
+.env.local
+.env.*.local
+# Framework-specific
+*.local.env
+*.secret
+secrets*.json
+
+################################################################################
+# Python / Conda
+################################################################################
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build / packaging
+.build/
+python_build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Envs
+.env/
+.venv/
+venv/
+ENV/
+env/
+.python-version
+.conda/
+conda-meta/
+# If you create a local conda env folder:
+# /conda-env/
+
+# Tools caches
+.mypy_cache/
+.pyre/
+.pytype/
+.pytest_cache/
+.coverage
+.coverage.*
+.cache/
+.tox/
+.nox/
+ruff_cache/
+.pybuild/
+
+# Jupyter
+.ipynb_checkpoints/
+.profile_default/
+.ipython/
+
+################################################################################
+# Logs & runtime
+################################################################################
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+debug.log
+*.pid
+*.seed
+*.pid.lock
+
+################################################################################
+# Web / App artifacts
+################################################################################
+*.map
+*.lock-wscript
+*.sass-cache/
+*.rpt
+*.stackdump
+
+################################################################################
+# Images / design tools (optional – uncomment as needed)
+################################################################################
+# *.psd
+# *.ai
+# *.sketch
+
+################################################################################
+# Docker / containers (optional – uncomment as needed)
+################################################################################
+# .docker/
+# docker-compose.override.yml
+# .env.docker
+
+################################################################################
+# Project-specific: datasets, temp outputs, experiments
+################################################################################
+# Ignore all dataset contents by default (keeps folder, skips heavy files)
+DATASET/**
+!DATASET/.gitkeep
+!DATASET/README.md
+
+# Common experiment/output dirs (customize as needed)
+outputs/
+artifacts/
+checkpoints/
+models/
+tmp/
+tmp_*/
+*.tmp
+
+################################################################################
+# OS-specific archives & compressed files (optional)
+################################################################################
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.zipx
+*.tgz
+*.xz
+*.bz2
+
+################################################################################
+# HTML/CSS build tools leftovers
+################################################################################
+.sass-cache/
+.cache-loader/
+.postcss-cache/
+*.db
+################################################################################
+# Misc
+################################################################################
+# lockfiles are generally GOOD to commit; comment these if your team policy differs:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Keep repo clean of local notes
+notes_local.md
+*.private.md
