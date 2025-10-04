@@ -2,17 +2,27 @@ from __future__ import annotations
 import pandas as pd
 import io
 import os
+import json
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Sequence
 
 
+# =======================
+# 🔴 Classe d'erreur
+# =======================
 @dataclass
 class DataLoadError:
     field: Optional[str]
     code: str
     message: str
 
+    def to_json(self) -> Dict[str, Any]:
+        return asdict(self)
 
+
+# =======================
+# 📦 Résultat du chargement
+# =======================
 @dataclass
 class DataLoadResult:
     ok: bool
@@ -25,23 +35,28 @@ class DataLoadResult:
         return {
             "ok": self.ok,
             "rows": self.rows,
-            "errors": [asdict(error) for error in self.errors],
+            "errors": [error.to_json() for error in self.errors],
             "columns": self.columns,
             "source_name": self.source_name,
         }
 
+    def to_json(self, indent: int = 2) -> str:
+        return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
+
+# =======================
+# 🧩 Classe principale DataLoader
+# =======================
 class DataLoader:
-    """Utility to load CSV/XLS/XLSX data with optional schema validation."""
+    """Charge un dataset CSV/XLS/XLSX et vérifie uniquement la présence des colonnes nécessaires."""
 
     def __init__(
         self,
-        expected_columns: Optional[Sequence[str]] = None,
-        allow_extra_columns: bool = True,
+        required_columns: Optional[Sequence[str]] = None,
     ) -> None:
-        self.expected_columns = list(expected_columns) if expected_columns else None
-        self.allow_extra_columns = allow_extra_columns
+        self.required_columns = list(required_columns) if required_columns else []
 
+    # === Charger un fichier local ===
     def load_file(self, path: str) -> DataLoadResult:
         source_name = os.path.basename(path) if path else None
         try:
@@ -50,16 +65,17 @@ class DataLoader:
 
             ext = os.path.splitext(path)[1].lower()
             if ext == ".csv":
-                dataframe = self._read_csv(path)
+                df = pd.read_csv(path)
             elif ext in (".xls", ".xlsx"):
-                dataframe = self._read_xlsx(path)
+                df = pd.read_excel(path)
             else:
                 return self._error_result("unsupported_type", f"Type non supporté: {ext}", source_name)
 
-            return self._validate_and_pack(dataframe, source_name)
-        except Exception as exc:  # pragma: no cover - runtime safety
+            return self._validate(df, source_name)
+        except Exception as exc:
             return self._error_result("load_failure", f"Erreur de chargement: {exc}", source_name)
 
+    # === Charger depuis des bytes (upload frontend) ===
     def load_bytes(self, content: bytes, filename: str) -> DataLoadResult:
         source_name = filename
         try:
@@ -67,63 +83,34 @@ class DataLoader:
             buffer = io.BytesIO(content)
 
             if ext == ".csv":
-                dataframe = self._read_csv(buffer)
+                df = pd.read_csv(buffer)
             elif ext in (".xls", ".xlsx"):
-                dataframe = self._read_xlsx(buffer)
+                df = pd.read_excel(buffer)
             else:
                 return self._error_result("unsupported_type", f"Type non supporté: {ext}", source_name)
 
-            return self._validate_and_pack(dataframe, source_name)
-        except Exception as exc:  # pragma: no cover - runtime safety
+            return self._validate(df, source_name)
+        except Exception as exc:
             return self._error_result("load_failure", f"Erreur de chargement: {exc}", source_name)
 
-    def _read_csv(self, source: Any):
-        if pd is None:
-            raise RuntimeError("pandas est requis pour lire un fichier CSV")
-
-        try:
-            return pd.read_csv(source)
-        except Exception:
-            return pd.read_csv(source, sep=";")
-
-    def _read_xlsx(self, source: Any):
-        if pd is None:
-            raise RuntimeError("pandas est requis pour lire un fichier Excel")
-
-        return pd.read_excel(source)
-
-    def _validate_and_pack(self, dataframe: Any, source_name: Optional[str]) -> DataLoadResult:
-        if pd is None:
-            return self._error_result("internal", "pandas requis pour la validation", source_name)
-
-        dataframe.columns = [str(column).strip() for column in list(dataframe.columns)]
-
+    # === Validation minimale ===
+    def _validate(self, df: pd.DataFrame, source_name: Optional[str]) -> DataLoadResult:
+        df.columns = [str(c).strip() for c in df.columns]
         errors: List[DataLoadError] = []
-        if self.expected_columns:
-            missing = [col for col in self.expected_columns if col not in dataframe.columns]
-            extra = [col for col in dataframe.columns if col not in self.expected_columns]
 
-            if missing:
-                errors.append(
-                    DataLoadError(None, "missing_columns", f"Colonnes manquantes: {', '.join(missing)}")
-                )
-
-            if not self.allow_extra_columns and extra:
-                errors.append(
-                    DataLoadError(None, "extra_columns", f"Colonnes supplémentaires: {', '.join(extra)}")
-                )
-
-        dataframe = dataframe.dropna(how="all")
-        rows: List[Dict[str, Any]] = dataframe.to_dict(orient="records")
+        missing = [col for col in self.required_columns if col not in df.columns]
+        if missing:
+            errors.append(DataLoadError(None, "missing_columns", f"Colonnes manquantes: {', '.join(missing)}"))
 
         return DataLoadResult(
             ok=len(errors) == 0,
-            rows=rows,
+            rows=df.to_dict(orient="records"),
             errors=errors,
-            columns=list(dataframe.columns),
+            columns=list(df.columns),
             source_name=source_name,
         )
 
+    # === Fabrique un résultat d'erreur ===
     def _error_result(self, code: str, message: str, source_name: Optional[str]) -> DataLoadResult:
         return DataLoadResult(
             ok=False,
@@ -133,3 +120,48 @@ class DataLoader:
             source_name=source_name,
         )
 
+
+# =======================
+# 🚀 Exemple d’utilisation
+# =======================
+if __name__ == "__main__":
+    required_cols = ["pl_orbper", "pl_rade", "pl_tranmid", "st_teff"]
+
+    loader = DataLoader(required_columns=required_cols)
+
+    # === Cas 1 : Fichier inexistant
+    print("🧪 Cas 1 : Fichier inexistant")
+    res = loader.load_file("fichier_inexistant.csv")
+    print(res.to_json())
+
+    # === Cas 2 : Colonnes manquantes
+    print("\n🧪 Cas 2 : Colonnes manquantes")
+    df_missing = pd.DataFrame({
+        "pl_orbper": [365],
+        "st_teff": [5778]
+    })
+    df_missing.to_csv("test_missing.csv", index=False)
+    res = loader.load_file("test_missing.csv")
+    print(res.to_json())
+
+    # === Cas 3 : Données valides
+    print("\n🧪 Cas 3 : Données valides")
+    df_valid = pd.DataFrame({
+        "pl_orbper": [365, 420],
+        "pl_rade": [1.0, 1.2],
+        "pl_tranmid": [2458330.5, 2458331.2],
+        "st_teff": [5778, 5800],
+        "extra_col": ["ok", "ok"]
+    })
+    df_valid.to_csv("test_valid.csv", index=False)
+    res = loader.load_file("test_valid.csv")
+    print(res.to_json())
+
+    # === Cas 4 : Upload (bytes)
+    print("\n🧪 Cas 4 : Lecture depuis bytes (simulation frontend)")
+    buffer = io.BytesIO()
+    df_valid.to_csv(buffer, index=False)
+    buffer.seek(0)
+    bytes_data = buffer.read()
+    res = loader.load_bytes(bytes_data, "upload.csv")
+    print(res.to_json())
