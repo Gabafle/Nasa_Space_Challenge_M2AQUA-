@@ -19,6 +19,7 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
+    '/upload/upload_data': RouteRecordInfo<'/upload/upload_data', '/upload/upload_data', Record<never, never>, Record<never, never>>,
   }
 
   /**
@@ -34,6 +35,10 @@ declare module 'vue-router/auto-routes' {
   export interface _RouteFileInfoMap {
     'src/pages/index.vue': {
       routes: '/'
+      views: never
+    }
+    'src/pages/upload_data.vue': {
+      routes: '/upload_data'
       views: never
     }
   }

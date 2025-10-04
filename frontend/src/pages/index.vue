@@ -1,7 +1,6 @@
 <template>
   <v-app>
 
-
     <v-main class="main">
       <canvas ref="starsCanvas" class="background-canvas"></canvas>
       <v-container
@@ -21,13 +20,7 @@
           </p>
 
           <div class="btn-container">
-            <v-btn
-              class="btn-expert"
-              elevation="4">
-              Fabric
-              <v-icon end>mdi-cube</v-icon>
-            </v-btn>
-            <v-btn
+            <v-btn to="/upload_data"
               class="btn-analyse"
               elevation="4">
               Commencer l’analyse
