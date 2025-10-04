@@ -6,3 +6,5 @@
 venv/
 env/
 ENV/
+src/shap/test.ipynb
+*__pycache__*
