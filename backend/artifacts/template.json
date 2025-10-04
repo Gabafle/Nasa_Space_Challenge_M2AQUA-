@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "timestamp": "2025-10-04T21:12:00Z",
+    "model_name": "RandomForestClassifier",
+    "framework": "scikit-learn",
+    "model_version": "1.0.0",
+    "train_dataset_size": 1050,
+    "test_dataset_size": 350,
+    "num_features": 42,
+    "num_classes": 3,
+    "target_names": ["Confirmed", "Candidate", "False Positive"]
+  },
+  "training_info": {
+    "fit_time_sec": 1.215,
+    "predict_time_sec": 0.042,
+    "cross_validation_folds": 5,
+    "cross_val_score_mean": 0.972,
+    "cross_val_score_std": 0.011
+  },
+  "cross_validation_results": {
+    "folds": [
+      {
+        "fold": 1,
+        "train_size": 840,
+        "val_size": 210,
+        "metrics": {
+          "accuracy": 0.971,
+          "precision": 0.970,
+          "recall": 0.971,
+          "f1": 0.971,
+          "roc_auc": 0.986,
+          "log_loss": 0.129
+        },
+        "fit_time_sec": 0.226,
+        "score_time_sec": 0.018
+      },
+      {
+        "fold": 2,
+        "train_size": 840,
+        "val_size": 210,
+        "metrics": {
+          "accuracy": 0.967,
+          "precision": 0.966,
+          "recall": 0.967,
+          "f1": 0.967,
+          "roc_auc": 0.983,
+          "log_loss": 0.132
+        },
+        "fit_time_sec": 0.242,
+        "score_time_sec": 0.019
+      },
+      {
+        "fold": 3,
+        "train_size": 840,
+        "val_size": 210,
+        "metrics": {
+          "accuracy": 0.975,
+          "precision": 0.975,
+          "recall": 0.975,
+          "f1": 0.975,
+          "roc_auc": 0.987,
+          "log_loss": 0.121
+        },
+        "fit_time_sec": 0.228,
+        "score_time_sec": 0.017
+      },
+      {
+        "fold": 4,
+        "train_size": 840,
+        "val_size": 210,
+        "metrics": {
+          "accuracy": 0.970,
+          "precision": 0.970,
+          "recall": 0.970,
+          "f1": 0.970,
+          "roc_auc": 0.985,
+          "log_loss": 0.128
+        },
+        "fit_time_sec": 0.237,
+        "score_time_sec": 0.020
+      },
+      {
+        "fold": 5,
+        "train_size": 840,
+        "val_size": 210,
+        "metrics": {
+          "accuracy": 0.978,
+          "precision": 0.978,
+          "recall": 0.978,
+          "f1": 0.978,
+          "roc_auc": 0.989,
+          "log_loss": 0.118
+        },
+        "fit_time_sec": 0.233,
+        "score_time_sec": 0.019
+      }
+    ],
+    "summary": {
+      "mean_accuracy": 0.9722,
+      "std_accuracy": 0.0039,
+      "mean_roc_auc": 0.986,
+      "std_roc_auc": 0.002,
+      "mean_fit_time": 0.233,
+      "mean_score_time": 0.019
+    }
+  },
+  "train_metrics": {
+    "accuracy": 0.999,
+    "precision": 0.999,
+    "recall": 0.999,
+    "f1": 0.999,
+    "roc_auc": 0.999
+  },
+  "test_metrics": {
+    "accuracy": 0.972,
+    "precision": 0.972,
+    "recall": 0.972,
+    "f1": 0.972,
+    "roc_auc": 0.986
+  },
+  "confusion_matrix": {
+    "matrix": [
+      [138, 2, 0],
+      [3, 122, 5],
+      [0, 4, 128]
+    ],
+    "labels": ["Confirmed", "Candidate", "False Positive"],
+    "normalized": [
+      [0.985, 0.014, 0.000],
+      [0.022, 0.902, 0.037],
+      [0.000, 0.030, 0.970]
+    ]
+  },
+  "roc_curve": {
+    "type": "micro",
+    "fpr": [0.0, 0.01, 0.04, 0.1, 0.3, 1.0],
+    "tpr": [0.0, 0.35, 0.67, 0.87, 0.96, 1.0],
+    "auc": 0.986
+  },
+  "learning_curve": {
+    "train_sizes": [50, 100, 200, 400, 600, 800, 1000],
+    "train_scores_mean": [0.996, 0.995, 0.994, 0.992, 0.991, 0.990, 0.989],
+    "train_scores_std": [0.003, 0.004, 0.003, 0.002, 0.002, 0.002, 0.001],
+    "test_scores_mean": [0.932, 0.944, 0.953, 0.961, 0.967, 0.971, 0.972],
+    "test_scores_std": [0.011, 0.010, 0.009, 0.008, 0.007, 0.006, 0.005]
+  },
+  "feature_importance": {
+    "top_features": [
+      {"name": "pl_orbper", "importance": 0.23},
+      {"name": "pl_trandep", "importance": 0.20},
+      {"name": "st_teff", "importance": 0.17},
+      {"name": "st_logg", "importance": 0.10},
+      {"name": "pl_rade", "importance": 0.09},
+      {"name": "st_rad", "importance": 0.06},
+      {"name": "pl_insol", "importance": 0.05},
+      {"name": "st_dist", "importance": 0.04},
+      {"name": "pl_eqt", "importance": 0.03},
+      {"name": "st_tmag", "importance": 0.03}
+    ],
+    "method": "Gini importance"
+  }
+}
