@@ -9,6 +9,10 @@ from typing import Union
 # Note: La classe ModelKind et ShapelyExplainer doivent être définies 
 # avant d'utiliser la classe XGBoostModel.
 
+
+from backend.src.models.shap import ModelKind, ShapelyExplainer
+
+
 class XGBoostModel:
     """
     Une interface pour le modèle de Classification XGBoost qui gère la standardisation
@@ -120,7 +124,3 @@ class XGBoostModel:
     def get_params(self, deep=True):
         """Retourne les paramètres du modèle Scikit-learn, nécessaire pour GridSearchCV."""
         return self.model.get_params(deep=deep)
-
-    def set_params(self, **params):
-        """Définit les paramètres du modèle Scikit-learn, nécessaire pour GridSearchCV."""
-        return self.model.set_params(**params)

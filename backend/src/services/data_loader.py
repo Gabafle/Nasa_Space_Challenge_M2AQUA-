@@ -44,9 +44,7 @@ class DataLoadResult:
         return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
 
-# =======================
-# 🧩 Classe principale DataLoader
-# =======================
+
 class DataLoader:
     """Charge un dataset CSV/XLS/XLSX et vérifie uniquement la présence des colonnes nécessaires."""
 
@@ -56,7 +54,7 @@ class DataLoader:
     ) -> None:
         self.required_columns = list(required_columns) if required_columns else []
 
-    # === Charger un fichier local ===
+
     def load_file(self, path: str) -> DataLoadResult:
         source_name = os.path.basename(path) if path else None
         try:
@@ -75,7 +73,6 @@ class DataLoader:
         except Exception as exc:
             return self._error_result("load_failure", f"Erreur de chargement: {exc}", source_name)
 
-    # === Charger depuis des bytes (upload frontend) ===
     def load_bytes(self, content: bytes, filename: str) -> DataLoadResult:
         source_name = filename
         try:
@@ -93,7 +90,6 @@ class DataLoader:
         except Exception as exc:
             return self._error_result("load_failure", f"Erreur de chargement: {exc}", source_name)
 
-    # === Validation minimale ===
     def _validate(self, df: pd.DataFrame, source_name: Optional[str]) -> DataLoadResult:
         df.columns = [str(c).strip() for c in df.columns]
         errors: List[DataLoadError] = []
@@ -109,8 +105,7 @@ class DataLoader:
             columns=list(df.columns),
             source_name=source_name,
         )
-
-    # === Fabrique un résultat d'erreur ===
+        
     def _error_result(self, code: str, message: str, source_name: Optional[str]) -> DataLoadResult:
         return DataLoadResult(
             ok=False,
@@ -121,9 +116,6 @@ class DataLoader:
         )
 
 
-# =======================
-# 🚀 Exemple d’utilisation
-# =======================
 if __name__ == "__main__":
     required_cols = ["pl_orbper", "pl_rade", "pl_tranmid", "st_teff"]
 

@@ -33,9 +33,6 @@ class ModelManager:
             X, y, test_size=test_size, stratify=y, random_state=random_state
         )
 
-    # ====================================================
-    # 🔮 PREDICT — version JSON complète avec proba
-    # ====================================================
     def predict(self, X):
         """
         Retourne un JSON contenant :
@@ -75,9 +72,7 @@ class ModelManager:
 
         return json.dumps(result, indent=4, ensure_ascii=False)
 
-    # ====================================================
-    # ⚙️ TRAIN
-    # ====================================================
+
     def train(self, cv=5):
         kf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=self.random_state)
         folds = []
@@ -131,10 +126,7 @@ class ModelManager:
             }
         }
         return self.model
-
-    # ====================================================
-    # 📊 EVALUATE
-    # ====================================================
+    
     def evaluate(self):
         y_pred_train = self.model.predict(self.X_train)
         y_pred_test = self.model.predict(self.X_test)
@@ -160,10 +152,10 @@ class ModelManager:
         }
 
         feat_importance = None
-        if hasattr(self.model, "feature_importances_"):
+        if hasattr(self.model, "feature_importances"):
             feat_importance = [
                 {"name": str(i), "importance": round(imp, 4)}
-                for i, imp in enumerate(self.model.feature_importances_)
+                for i, imp in enumerate(self.model.feature_importances)
             ]
             feat_importance = sorted(feat_importance, key=lambda x: x["importance"], reverse=True)[:10]
 
@@ -195,13 +187,11 @@ class ModelManager:
             }
         }
 
-        print("✅ Évaluation complète effectuée.")
         return self.report
     
     
     def save_model(self, path="trained_model.joblib"):
         joblib.dump(self.model, path)
-        print(f"💾 Modèle sauvegardé dans {path}")
         return path
 
     def export_json(self, path=None, indent=4):
@@ -209,7 +199,6 @@ class ModelManager:
         if path:
             with open(path, "w") as f:
                 f.write(json_str)
-            print(f"💾 Rapport JSON sauvegardé dans {path}")
         return json_str
 
     def _compute_metrics(self, y_true, y_pred, y_prob=None):
