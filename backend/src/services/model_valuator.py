@@ -19,28 +19,68 @@ class ModelManager:
       - Réglage dynamique des hyperparamètres
     """
 
-    def __init__(self, model, X, y, class_labels=None, test_size=0.25, random_state=42):
+    def __init__(self, model, X, y, class_labels=None, feature_names=None, test_size=0.25, random_state=42):
         self.model = model
         self.X = X
         self.y = y
         self.test_size = test_size
         self.random_state = random_state
         self.class_labels = class_labels if class_labels is not None else np.unique(y)
+        self.feature_names = feature_names if feature_names is not None else [f"feature_{i}" for i in range(X.shape[1])]
         self.report = {}
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=test_size, stratify=y, random_state=random_state
         )
-        
-    def set_params(self, **kwargs):
-        """Permet de modifier dynamiquement les hyperparamètres du modèle."""
-        self.model.set_params(**kwargs)
 
+    # ====================================================
+    # 🔮 PREDICT — version JSON complète avec proba
+    # ====================================================
+    def predict(self, X):
+        """
+        Retourne un JSON contenant :
+          - les features d'entrée
+          - la classe prédite
+          - les probabilités associées
+        """
+        y_pred = self.model.predict(X)
+        y_proba = self.model.predict_proba(X)
+
+        predictions = []
+        for i in range(len(X)):
+            # Dictionnaire des features
+            features = {
+                self.feature_names[j]: float(X[i][j])
+                for j in range(len(self.feature_names))
+            }
+            # Dictionnaire des probabilités
+            probas = {
+                str(self.class_labels[k]): round(float(y_proba[i][k]), 4)
+                for k in range(len(self.class_labels))
+            }
+
+            predictions.append({
+                "input_features": features,
+                "predicted_class": str(y_pred[i]),
+                "class_probabilities": probas
+            })
+
+        result = {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "model_name": type(self.model).__name__,
+            "num_samples": len(X),
+            "num_features": len(self.feature_names),
+            "predictions": predictions
+        }
+
+        return json.dumps(result, indent=4, ensure_ascii=False)
+
+    # ====================================================
+    # ⚙️ TRAIN
+    # ====================================================
     def train(self, cv=5):
-
         kf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=self.random_state)
         folds = []
-
         accuracies, fit_times, score_times = [], [], []
 
         for i, (train_idx, val_idx) in enumerate(kf.split(self.X_train, self.y_train)):
@@ -55,12 +95,7 @@ class ModelManager:
             y_pred = self.model.predict(X_val)
             score_time = round(time.time() - start_score, 3)
 
-            y_prob = None
-            if hasattr(self.model, "predict_proba"):
-                try:
-                    y_prob = self.model.predict_proba(X_val)
-                except Exception:
-                    pass
+            y_prob = self.model.predict_proba(X_val)
             metrics = self._compute_metrics(y_val, y_pred, y_prob)
 
             folds.append({
@@ -75,6 +110,7 @@ class ModelManager:
             accuracies.append(metrics["accuracy"])
             fit_times.append(fit_time)
             score_times.append(score_time)
+
         self.model.fit(self.X_train, self.y_train)
 
         self.training_info = {
@@ -96,25 +132,20 @@ class ModelManager:
         }
         return self.model
 
+    # ====================================================
+    # 📊 EVALUATE
+    # ====================================================
     def evaluate(self):
         y_pred_train = self.model.predict(self.X_train)
         y_pred_test = self.model.predict(self.X_test)
-
-        y_prob_test = None
-        if hasattr(self.model, "predict_proba"):
-            try:
-                y_prob_test = self.model.predict_proba(self.X_test)
-            except Exception:
-                pass
+        y_prob_test = self.model.predict_proba(self.X_test)
 
         train_metrics = self._compute_metrics(self.y_train, y_pred_train)
         test_metrics = self._compute_metrics(self.y_test, y_pred_test, y_prob_test)
 
-        # Confusion matrix
         cm = confusion_matrix(self.y_test, y_pred_test)
         cm_norm = (cm / cm.sum(axis=1, keepdims=True)).round(3)
 
-        # Learning curve
         train_sizes, train_scores, test_scores = learning_curve(
             self.model, self.X_train, self.y_train,
             cv=5, scoring="accuracy", train_sizes=np.linspace(0.1, 1.0, 7), n_jobs=-1
@@ -127,6 +158,7 @@ class ModelManager:
             "test_scores_mean": np.mean(test_scores, axis=1).round(4).tolist(),
             "test_scores_std": np.std(test_scores, axis=1).round(4).tolist()
         }
+
         feat_importance = None
         if hasattr(self.model, "feature_importances_"):
             feat_importance = [
@@ -134,6 +166,7 @@ class ModelManager:
                 for i, imp in enumerate(self.model.feature_importances_)
             ]
             feat_importance = sorted(feat_importance, key=lambda x: x["importance"], reverse=True)[:10]
+
         self.report = {
             "metadata": {
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -164,8 +197,8 @@ class ModelManager:
 
         print("✅ Évaluation complète effectuée.")
         return self.report
-
-    # === 💾 Sauvegarde modèle et JSON ===
+    
+    
     def save_model(self, path="trained_model.joblib"):
         joblib.dump(self.model, path)
         print(f"💾 Modèle sauvegardé dans {path}")
@@ -178,7 +211,7 @@ class ModelManager:
                 f.write(json_str)
             print(f"💾 Rapport JSON sauvegardé dans {path}")
         return json_str
-    
+
     def _compute_metrics(self, y_true, y_pred, y_prob=None):
         metrics = {
             "accuracy": round(accuracy_score(y_true, y_pred), 4),
@@ -186,9 +219,4 @@ class ModelManager:
             "recall": round(recall_score(y_true, y_pred, average="micro"), 4),
             "f1": round(f1_score(y_true, y_pred, average="micro"), 4),
         }
-        if y_prob is not None:
-            try:
-                metrics["log_loss"] = round(log_loss(y_true, y_prob), 4)
-            except Exception:
-                metrics["log_loss"] = None
         return metrics
