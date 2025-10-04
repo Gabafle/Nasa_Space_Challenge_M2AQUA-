@@ -220,3 +220,5 @@ class ModelManager:
             "f1": round(f1_score(y_true, y_pred, average="micro"), 4),
         }
         return metrics
+    
+
